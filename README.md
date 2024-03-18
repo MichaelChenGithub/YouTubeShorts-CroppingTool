@@ -9,6 +9,13 @@ Welcome to the Face Detection CroppingTool for YouTubeShorts project! This innov
 - **Audio Management**: Seamlessly extracts and reattaches audio from the original video to the processed output, ensuring no loss in audio quality or synchronization.
 - **Efficient Frame Processing**: Incorporates an intelligent frame update mechanism to optimize processing time without compromising the detection accuracy.
 
+## Customizable Parameters
+
+- **scaleFactor**: Determines the scale factor between image scales for face detection. A higher value might miss smaller faces but improve processing speed.
+- **minNeighbors**: The minimum number of neighbors a rectangle should have to be considered a face. Higher values result in fewer detections but with higher quality.
+- **check_top_frame**: Number of initial frames to analyze for setting the initial cropping window based on detected faces. Useful for establishing focus at the beginning of the video.
+- **update_interval**: The frequency of frame analysis for updating the cropping window. Lower values ensure more frequent updates, providing smoother tracking of the subject.
+
 ## Getting Started
 
 ### Prerequisites
