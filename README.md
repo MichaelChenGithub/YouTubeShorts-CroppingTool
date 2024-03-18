@@ -36,7 +36,7 @@ def main():
     input_video_path = 'path/to/your/input/video.mp4'
     output_video_path = 'path/to/your/output/video.mp4'
 
-    processor = VideoProcessor(input_video_path, output_video_path)
+    processor = VideoProcessor(input_video_path, output_video_path, scaleFactor=1.2, minNeighbors=5, check_top_frame=10, update_interval=5)
     processor.run() # Run the video processing
 
 if __name__ == '__main__':

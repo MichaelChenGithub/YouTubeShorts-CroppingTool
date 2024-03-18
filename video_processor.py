@@ -42,12 +42,15 @@ class FaceDetector:
     用於在影片中檢測人臉的類別。
     使用 OpenCV 的 Haar Cascade 分類器來識別人臉。
     """
-    def __init__(self):
+    def __init__(self, scaleFactor=1.1, minNeighbors=10):
         """
         初始化 FaceDetector，加載用於人臉檢測的 Haar Cascade 模型。
+        允許從外部設定 scaleFactor 和 minNeighbors 參數。
         """
         self.cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
         self.face_cascade = cv2.CascadeClassifier(self.cascade_path)
+        self.scaleFactor = scaleFactor
+        self.minNeighbors = minNeighbors
 
     def detect_faces(self, frame):
         """
@@ -60,35 +63,38 @@ class FaceDetector:
         - faces: 檢測到的人臉列表，每個人臉由一個矩形框表示（x, y, w, h）。
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10)
+        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors)
         return faces
 
 class VideoProcessor:
     """
     處理影片的主要類別，包括裁剪、調整大小並保持目標（如人臉）在畫面中心。
     """
-    def __init__(self, input_video_path, output_video_path):
+    def __init__(self, input_video_path, output_video_path, scaleFactor=1.1, minNeighbors=10, check_top_frame=10, update_interval=5):
         """
         初始化 VideoProcessor。
 
         Parameters:
         - input_video_path: 原始影片的路徑。
         - output_video_path: 處理後影片的儲存路徑。
+        - scaleFactor: 每個影像尺度之間的縮放比例。
+        - minNeighbors: 檢測到的候選矩形保留所需的鄰居數量。
+        - check_top_frame: 偵測前 N 帧的人物影像來設定初始裁切框。
         """
         self.input_video_path = input_video_path
         self.output_video_path = output_video_path.replace('.mp4', '_temp.mp4')  # 生成一個臨時檔案儲存無音訊影片
         self.final_output_path = output_video_path  # 最終包含音訊的影片儲存路徑
         self.cap = cv2.VideoCapture(input_video_path) # 打開原始影片
-        self.face_detector = FaceDetector() # 創建人臉檢測器實例
+        self.face_detector = FaceDetector(scaleFactor, minNeighbors) # 創建人臉檢測器實例
         self.audio_manager = AudioManager(input_video_path, self.final_output_path) # 創建音訊管理器實例
         
         # 獲取影片的尺寸並計算裁剪大小
         self.original_height, self.original_width = self.get_video_dimensions()
         self.crop_height, self.crop_width = self.calculate_crop_size()
-        self.set_init_crop_box()
+        self.set_init_crop_box(check_top_frame)
 
         self.frame_counter = 0  # 添加帧数计数器，用于控制裁剪框的更新频率
-        self.update_interval = 5  # 每隔5帧更新一次裁剪框
+        self.update_interval = update_interval  # 每隔 N 帧更新一次裁剪框
 
     def get_video_dimensions(self):
         """
@@ -117,12 +123,12 @@ class VideoProcessor:
             crop_height = int(crop_width * 16 / 9) # 如果計算的寬度超過原始寬度，則調整高度
         return crop_height, crop_width
     
-    def set_init_crop_box(self):
+    def set_init_crop_box(self, check_top_frame):
         """
-        設置初始裁剪框的位置，並嘗試根據影片前幾帧中檢測到的最大人臉來調整裁剪框的位置。
+        設置初始裁剪框的位置，並嘗試根據影片前 N 帧中檢測到的最大人臉來調整裁剪框的位置。
         """
         self.start_x, self.start_y = (self.original_width - self.crop_width) // 2, (self.original_height - self.crop_height) // 2
-        for _ in range(10): # 檢查前十帧
+        for _ in range(check_top_frame): # 檢查前 N 帧的臉部
             ret, frame = self.cap.read()
             if not ret:
                 return
@@ -214,10 +220,10 @@ def main():
     """
     主函數，創建 VideoProcessor 實例並運行影片處理。
     """
-    input_video_path = 'test.mp4'
-    output_video_path = 'test_output_automation_per5.mp4'
+    input_video_path = 'zero_shot_test.mp4'
+    output_video_path = 'zero_shot_test_automation_arg.mp4'
 
-    processor = VideoProcessor(input_video_path, output_video_path)
+    processor = VideoProcessor(input_video_path, output_video_path, scaleFactor=1.2, minNeighbors=5, check_top_frame=10, update_interval=5)
     processor.run() # 運行影片處理
 
 if __name__ == '__main__':
