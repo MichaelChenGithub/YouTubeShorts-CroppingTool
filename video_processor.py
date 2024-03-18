@@ -70,7 +70,7 @@ class VideoProcessor:
     """
     處理影片的主要類別，包括裁剪、調整大小並保持目標（如人臉）在畫面中心。
     """
-    def __init__(self, input_video_path, output_video_path, scaleFactor=1.1, minNeighbors=10, check_top_frame=10, update_interval=5):
+    def __init__(self, input_video_path, output_video_path, scaleFactor=1.1, minNeighbors=10, check_top_frame=10, update_interval=3):
         """
         初始化 VideoProcessor。
 
@@ -80,6 +80,7 @@ class VideoProcessor:
         - scaleFactor: 每個影像尺度之間的縮放比例。
         - minNeighbors: 檢測到的候選矩形保留所需的鄰居數量。
         - check_top_frame: 偵測前 N 帧的人物影像來設定初始裁切框。
+        - update_interval: 每隔 N 帧更新裁切框。
         """
         self.input_video_path = input_video_path
         self.output_video_path = output_video_path.replace('.mp4', '_temp.mp4')  # 生成一個臨時檔案儲存無音訊影片
@@ -223,7 +224,7 @@ def main():
     input_video_path = 'zero_shot_test.mp4'
     output_video_path = 'zero_shot_test_automation_arg.mp4'
 
-    processor = VideoProcessor(input_video_path, output_video_path, scaleFactor=1.2, minNeighbors=5, check_top_frame=10, update_interval=5)
+    processor = VideoProcessor(input_video_path, output_video_path, scaleFactor=1.2, minNeighbors=5, check_top_frame=10, update_interval=3)
     processor.run() # 運行影片處理
 
 if __name__ == '__main__':
